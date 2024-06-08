@@ -1,20 +1,11 @@
-import tkinter, random, tkinter.messagebox, tkinter.simpledialog, webbrowser
+import tkinter, random, tkinter.messagebox, tkinter.simpledialog, webbrowser, pygame
 
-window = tkinter.Tk()
-window.resizable(False, False)
-window.title("Сапер")
 
-rows = 10
-cols = 10
-mines = 10
+pygame.mixer.init()
+lose = pygame.mixer.Sound("zvuk-vzryva.mp3")
+wins = pygame.mixer.Sound("win.mp3")
 
-field = []
-buttons = []
 
-colors = ['#FFFFFF', '#0000FF', '#008200', '#FF0000', '#000084', '#840000', '#008284', '#840084', '#000000']
-
-gameover = False
-customsizes = []
 
 
 def createMenu():
@@ -49,7 +40,7 @@ def prepareGame():
     for _ in range(0, mines):
         x = random.randint(0, rows - 1)
         y = random.randint(0, cols - 1)
-        # Проверяем чтобы мина не спавнилась рядом с друг другом
+        # Проверяем чтобы мина не спавнилась рядом в друг друге
         while field[x][y] == -1:
             x = random.randint(0, rows - 1)
             y = random.randint(0, cols - 1)
@@ -114,12 +105,14 @@ def clickOn(x, y):
     if field[x][y] == -1:
         buttons[x][y]["text"] = "☢"
         buttons[x][y].config(background='red', disabledforeground='black')
+        lose.play()
         gameover = True
         tkinter.messagebox.showinfo("Вот и все...", "Мы никогда не потерпим поражения, пока душа готова побеждать...")
         for _x in range(0, rows):
             for _y in range(cols):
                 if field[_x][_y] == -1:
                     buttons[_x][_y]["text"] = "☢"
+                    buttons[_x][_y].config(background='red', disabledforeground='black')
     else:
         buttons[x][y].config(background='white', disabledforeground=colors[field[x][y]])
     if field[x][y] == 0:
@@ -164,12 +157,12 @@ def onRightClick(x, y):
     global buttons
     if gameover:
         return
-    if buttons[x][y]["text"] == "☢":
+    if buttons[x][y]["text"] == "⚐":
         buttons[x][y]["text"] = " "
         buttons[x][y]["state"] = "normal"
         buttons[x][y].config(background='gray', disabledforeground='black')
     elif buttons[x][y]["text"] == " " and buttons[x][y]["state"] == "normal":
-        buttons[x][y]["text"] = "☢"
+        buttons[x][y]["text"] = "⚐"
         buttons[x][y]["state"] = "disabled"
         buttons[x][y].config(background='yellow', disabledforeground='black')
 
@@ -182,6 +175,7 @@ def checkWin():
             if field[x][y] != -1 and buttons[x][y]["state"] == "normal":
                 win = False
     if win:
+        wins.play()
         tkinter.messagebox.showinfo("Вот и все...", "Побеждают только сильные духом.")
 
 
@@ -199,6 +193,18 @@ def showSourceCode():
     webbrowser.open(source_code_url)
 
 
+
+window = tkinter.Tk()
+window.resizable(False, False)
+window.title("Сапер")
+
+rows, cols, mines = 10, 10, 10
+
+field, buttons = [], []
+
+colors = ['#FFFFFF', '#0000FF', '#008200', '#FF0000', '#000084', '#840000', '#008284', '#840084', '#000000']
+
+gameover = False
 createMenu()
 prepareWindow()
 prepareGame()
