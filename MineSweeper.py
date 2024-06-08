@@ -40,7 +40,7 @@ def prepareGame():
     for _ in range(0, mines):
         x = random.randint(0, rows - 1)
         y = random.randint(0, cols - 1)
-        # Проверяем чтобы мина не спавнилась рядом в друг друге
+        # Проверяем чтобы мина не спавнилась в друг друге
         while field[x][y] == -1:
             x = random.randint(0, rows - 1)
             y = random.randint(0, cols - 1)
