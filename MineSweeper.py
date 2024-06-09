@@ -2,10 +2,9 @@ import tkinter, random, tkinter.messagebox, tkinter.simpledialog, webbrowser
 
 
 class MineSweeper:
-    def __init__(self, window, rows, cols, mines):
+    def __init__(self, window, size, mines):
         self.window = window
-        self.rows = rows
-        self.cols = cols
+        self.size = size
         self.mines = mines
         self.field = []
         self.buttons = []
@@ -19,35 +18,34 @@ class MineSweeper:
     def create_menu(self):
         menubar = tkinter.Menu(self.window)
         menusize = tkinter.Menu(self.window, tearoff=0)
-        menusize.add_command(label="Маленький (10x10 с 10 минами)", command=lambda: self.set_size(10, 10, 10))
-        menusize.add_command(label="Средний (20x20 с 40 минами)", command=lambda: self.set_size(20, 20, 40))
-        menusize.add_command(label="Большой (35x35 с 120 минами)", command=lambda: self.set_size(35, 35, 120))
+        menusize.add_command(label="Маленький (10x10 с 10 минами)", command=lambda: self.set_size(10,  10))
+        menusize.add_command(label="Средний 15x15 с 40 минами)", command=lambda: self.set_size(15,  40))
+        menusize.add_command(label="Большой (20x20 с 80 минами)", command=lambda: self.set_size(20,  80))
         menubar.add_cascade(label="Размер", menu=menusize)
         menubar.add_command(label="Правила", command=self.show_rules)
         menubar.add_command(label="Ссылка на исходный код", command=self.show_source_code)
         menubar.add_command(label="Выход", command=self.window.destroy)
         self.window.config(menu=menubar)
 
-    def set_size(self, rows, cols, mines):
-        self.rows = rows
-        self.cols = cols
+    def set_size(self, size, mines):
+        self.size = size
         self.mines = mines
         self.restart_game()
 
     def prepare_game(self):
         self.field = []
-        for x in range(0, self.rows):
+        for x in range(0, self.size):
             self.field.append([])
-            for y in range(0, self.cols):
+            for y in range(0, self.size):
                 self.field[x].append(0)
         # Генерируем мины
         for _ in range(0, self.mines):
-            x = random.randint(0, self.rows - 1)
-            y = random.randint(0, self.cols - 1)
+            x = random.randint(0, self.size - 1)
+            y = random.randint(0, self.size - 1)
             # Проверяем чтобы мина не спавнилась в друг друге
             while self.field[x][y] == -1:
-                x = random.randint(0, self.rows - 1)
-                y = random.randint(0, self.cols - 1)
+                x = random.randint(0, self.size - 1)
+                y = random.randint(0, self.size - 1)
             self.field[x][y] = -1
             self.update_neighbors(x, y)
 
@@ -58,33 +56,33 @@ class MineSweeper:
                     self.field[x - 1][y - 1] = int(self.field[x - 1][y - 1]) + 1
             if self.field[x - 1][y] != -1:
                 self.field[x - 1][y] = int(self.field[x - 1][y]) + 1
-            if y != self.cols - 1:
+            if y != self.size - 1:
                 if self.field[x - 1][y + 1] != -1:
                     self.field[x - 1][y + 1] = int(self.field[x - 1][y + 1]) + 1
         if y != 0:
             if self.field[x][y - 1] != -1:
                 self.field[x][y - 1] = int(self.field[x][y - 1]) + 1
-        if y != self.cols - 1:
+        if y != self.size - 1:
             if self.field[x][y + 1] != -1:
                 self.field[x][y + 1] = int(self.field[x][y + 1]) + 1
-        if x != self.rows - 1:
+        if x != self.size - 1:
             if y != 0:
                 if self.field[x + 1][y - 1] != -1:
                     self.field[x + 1][y - 1] = int(self.field[x + 1][y - 1]) + 1
             if self.field[x + 1][y] != -1:
                 self.field[x + 1][y] = int(self.field[x + 1][y]) + 1
-            if y != self.cols - 1:
+            if y != self.size - 1:
                 if self.field[x + 1][y + 1] != -1:
                     self.field[x + 1][y + 1] = int(self.field[x + 1][y + 1]) + 1
 
     def prepare_window(self):
-        tkinter.Button(self.window, text="Начнем сначала?", command=self.restart_game).grid(row=0, column=0,
-                                                                                            columnspan=self.cols,
-                                                                                            sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
+        tkinter.Button(self.window,
+                       text="Начнем сначала?",
+                       command=self.restart_game).grid(row=0,column=0,columnspan=self.size, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
         self.buttons = []
-        for x in range(0, self.rows):
+        for x in range(0, self.size):
             self.buttons.append([])
-            for y in range(0, self.cols):
+            for y in range(0, self.size):
                 b = tkinter.Button(self.window, text=" ", background='grey', width=4, height=2,
                                    command=lambda x=x, y=y: self.click_on(x, y))
                 b.bind("<Button-3>", lambda e, x=x, y=y: self.on_right_click(x, y))
@@ -102,8 +100,8 @@ class MineSweeper:
 
     def check_win(self):
         win = True
-        for x in range(0, self.rows):
-            for y in range(0, self.cols):
+        for x in range(0, self.size):
+            for y in range(0, self.size):
                 if self.field[x][y] != -1 and self.buttons[x][y]['state'] == 'normal':
                     win = False
         if win:
@@ -144,8 +142,8 @@ class ClickGame:
             self.mine_sweeper.gameover = True
             tkinter.messagebox.showinfo("Вот и все...",
                                         "Мы никогда не потерпим поражения, пока душа готова побеждать...")
-            for _x in range(0, self.mine_sweeper.rows):
-                for _y in range(0, self.mine_sweeper.cols):
+            for _x in range(0, self.mine_sweeper.size):
+                for _y in range(0, self.mine_sweeper.size):
                     if self.mine_sweeper.field[_x][_y] == -1:
                         self.mine_sweeper.buttons[_x][_y]["text"] = "☢"
                         self.mine_sweeper.buttons[_x][_y].config(background='red', disabledforeground='black')
@@ -166,26 +164,24 @@ class ClickGame:
         if self.mine_sweeper.field[self.x][self.y] != 0:
             return
         self.mine_sweeper.buttons[self.x][self.y]["text"] = " "
-        self.mine_sweeper.buttons[self.x][self.y].config(background='white',
-                                                         disabledforeground=self.mine_sweeper.colors[
-                                                             self.mine_sweeper.field[self.x][self.y]])
+        self.mine_sweeper.buttons[self.x][self.y].config(background='white',  disabledforeground=self.mine_sweeper.colors[self.mine_sweeper.field[self.x][self.y]])
         self.mine_sweeper.buttons[self.x][self.y]['state'] = 'disabled'
         self.mine_sweeper.buttons[self.x][self.y].config(relief=tkinter.SUNKEN)
         if self.x != 0:
             if self.y != 0:
                 self.auto_click_on_recursive(self.x - 1, self.y - 1)
             self.auto_click_on_recursive(self.x - 1, self.y)
-            if self.y != self.mine_sweeper.cols - 1:
+            if self.y != self.mine_sweeper.size - 1:
                 self.auto_click_on_recursive(self.x - 1, self.y + 1)
         if self.y != 0:
             self.auto_click_on_recursive(self.x, self.y - 1)
-        if self.y != self.mine_sweeper.cols - 1:
+        if self.y != self.mine_sweeper.size - 1:
             self.auto_click_on_recursive(self.x, self.y + 1)
-        if self.x != self.mine_sweeper.rows - 1:
+        if self.x != self.mine_sweeper.size - 1:
             if self.y != 0:
                 self.auto_click_on_recursive(self.x + 1, self.y - 1)
             self.auto_click_on_recursive(self.x + 1, self.y)
-            if self.y != self.mine_sweeper.cols - 1:
+            if self.y != self.mine_sweeper.size - 1:
                 self.auto_click_on_recursive(self.x + 1, self.y + 1)
 
     def auto_click_on_recursive(self, x, y):
@@ -207,6 +203,5 @@ class ClickGame:
 window = tkinter.Tk()
 window.resizable(False, False)
 window.title("Сапер")
-
-game = MineSweeper(window, 10, 10, 10)
+game = MineSweeper(window, 10, 10)
 window.mainloop()
